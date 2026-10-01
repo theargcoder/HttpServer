@@ -1,0 +1,99 @@
+# =========================================================
+# Global: only settings that genuinely apply to ALL files
+# =========================================================
+
+CompileFlags:
+  CompilationDatabase: build
+
+Index:
+  Background: Build
+  StandardLibrary: Yes
+
+---
+# =========================================================
+# C++ stuff 
+# =========================================================
+If:
+  PathMatch: [.*\.cpp, .*\.hpp]
+
+CompileFlags:
+  Add:
+    - -std=c++23
+    - -I.
+    - -ftemplate-backtrace-limit=0
+    - -fconstexpr-backtrace-limit=0
+    - -fmacro-backtrace-limit=0
+    - -ferror-limit=0
+  Remove:
+    - -fno-lifetime-dse
+    - -fno-ipa-sra
+    - -fvar-tracking*
+    - -fsanitize*
+
+Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: None
+  Suppress:
+    - unknown_argument
+
+Completion:
+  AllScopes: Yes
+  HeaderInsertion: IWYU
+  ArgumentLists: FullPlaceholders
+
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  Designators: Yes
+  BlockEnd: Yes
+  DefaultArguments: Yes
+  TypeNameLimit: 0
+
+---
+# =========================================================
+# BPF / XDP
+# =========================================================
+
+If:
+  PathMatch: .*\.bpf\.c
+
+CompileFlags:
+  # The compilation database has no entry for the custom BPF command,
+  # so clangd may infer /usr/bin/c++ from a nearby C++ source.
+  # Force the driver to be clang so this is parsed as C.
+  Compiler: clang
+
+  Add:
+    - -x
+    - c
+    - -target
+    - bpf
+    - -D__TARGET_ARCH_x86
+    - -O2
+
+  Remove:
+    - -m*
+    - -march=*
+    - -mcpu=*
+    - -mtune=*
+    - -std=*
+
+Diagnostics:
+  ClangTidy:
+    Remove:
+      - '*'
+
+Completion:
+  AllScopes: Yes
+  ArgumentLists: FullPlaceholders
+
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  Designators: Yes
+  BlockEnd: Yes
+  DefaultArguments: Yes
+  TypeNameLimit: 0
+...

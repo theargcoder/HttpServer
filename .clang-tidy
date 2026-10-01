@@ -1,0 +1,134 @@
+---
+Checks: >
+  -*,
+
+  -abseil-*,
+
+  -altera-*,
+  -android-*,
+
+  boost-*,
+
+  bugprone-*,
+
+  concurrency-*,
+
+  clang-analyzer-*,
+
+  cppcoreguidelines-*,
+  -cppcoreguidelines-owning-memory,
+
+  hicpp-*,
+
+  llvm-include-order,
+  llvm-namespace-comment,
+
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+
+  modernize-*,
+  -modernize-use-trailing-return-type,
+
+  performance-*,
+
+  readability-avoid-*,
+  readability-braces-*,
+  readability-const-*,
+  readability-container-contains,
+  readability-magic-numbers,
+  readability-misleading-indentation,
+  readability-non-const-parameter,
+  readability-qualified-auto,
+  readability-redundant-casting,
+  readability-redundant-control-flow,
+  readability-redundant-declaration,
+  readability-redundant-inline-specifier,
+  readability-redundant-parentheses,
+  readability-redundant-smart-pointer-get,
+  readability-redundant-string-init,
+  readability-redundant-typename,
+  readability-simplify-boolean-expr,
+  readability-simplify-subscript-expr,
+  readability-static-*,
+  readability-uppercase-literal-suffix,
+
+  bugprone-assert-side-effect,
+  bugprone-branch-clone,
+  bugprone-copy-constructor-init,
+  bugprone-dangling-handle,
+  bugprone-fold-init-type,
+  bugprone-implicit-widening-of-multiplication-result,
+  bugprone-inaccurate-erase,
+  bugprone-integer-division,
+  bugprone-misplaced-widening-cast,
+  bugprone-narrowing-conversions,
+  bugprone-not-null-terminated-result,
+  bugprone-parent-virtual-call,
+  bugprone-sizeof-container,
+  bugprone-sizeof-expression,
+  bugprone-string-constructor,
+  bugprone-suspicious-enum-usage,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-realloc-usage,
+  bugprone-suspicious-semicolon,
+  bugprone-suspicious-sign-conversion,
+  bugprone-swapped-arguments,
+  bugprone-switch-missing-default-case,
+  bugprone-terminating-continue,
+  bugprone-too-small-loop-variable,
+  bugprone-unhandled-self-assignment,
+  bugprone-use-after-move,
+  bugprone-virtual-near-miss,
+
+  cppcoreguidelines-avoid-magic-numbers,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-narrowing-conversions,
+  cppcoreguidelines-no-malloc,
+  cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  cppcoreguidelines-pro-bounds-constant-array-index,
+  cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-pro-type-member-init,
+  cppcoreguidelines-pro-type-reinterpret-cast,
+  cppcoreguidelines-pro-type-static-cast-downcast,
+  cppcoreguidelines-pro-type-union-access,
+  cppcoreguidelines-pro-type-vararg,
+
+  performance-for-range-copy,
+  performance-implicit-conversion-in-loop,
+  performance-inefficient-algorithm,
+  performance-move-const-arg,
+  performance-noexcept-move-constructor,
+  performance-trivially-destructible,
+  performance-type-promotion-in-math-fn,
+
+  readability-function-cognitive-complexity,
+  readability-identifier-length,
+  readability-isolate-declaration,
+  readability-named-parameter,
+  readability-redundant-string-cstr,
+  readability-static-accessed-through-instance,
+  readability-use-anyofallof
+
+# commented since very annoying
+#WarningsAsErrors: >
+#  *,
+#  -readability-magic-numbers,
+#  -readability-identifier-length
+
+# Only lint YOUR project headers/source. Exclude the external Ryu tree.
+HeaderFilterRegex: '^(?!.*(^|/)ryu(/|$)).*$'
+
+FormatStyle: none
+
+CheckOptions:
+  readability-magic-numbers.IgnoredIntegerValues: '0;1;2;10;16;32;64;100;1000'
+  readability-magic-numbers.IgnoredFloatingPointValues: '0.0;1.0'
+
+  readability-identifier-length.MinimumVariableNameLength: 2
+  readability-identifier-length.MinimumParameterNameLength: 2
+
+  readability-function-cognitive-complexity.Threshold: 15
+
+  misc-include-cleaner.IgnoreTransitiveIncludes: false
+...

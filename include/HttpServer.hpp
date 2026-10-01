@@ -1,0 +1,3 @@
+namespace HttpServer
+{
+} // namespace HttpServer
