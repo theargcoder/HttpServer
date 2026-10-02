@@ -22,6 +22,115 @@ int xdp_redirect_12345(struct xdp_md *ctx)
   void *data = (void *)(long)ctx->data;
   void *data_end = (void *)(long)ctx->data_end;
 
+  // we have to have something besides the header LOL
+  if((data + sizeof(struct ethhdr)) > data_end)
+    return XDP_DROP;
+
+  data += 12; // skip MAC addresses
+
+  __u16 header = *(__u16 *)data;
+
+  // VLAN header we gotta loop since they can be stacked
+  if(header == bpf_htons(ETH_P_8021Q) || header == bpf_htons(ETH_P_8021AD))
+  {
+    unsigned i = 0;
+#pragma unroll
+    for(; i < 4; i++)
+    {
+      if(data + 7 > data_end) // VLAN header (4) + Ether/Ver (2) + extra (1) -- extra since it has to have payload
+        return XDP_DROP;
+
+      header = *(__u16 *)data;
+
+      if(header != bpf_htons(ETH_P_8021Q) && header != bpf_htons(ETH_P_8021AD))
+        break;
+
+      data += 4; // skip PCP/DEI/VID and skip Ether Type/Size straight into next header
+    }
+
+    if(i == 4) // 1'000'000'000 VLANs stacked ??? wtf let the kernel figure it out
+      return XDP_PASS;
+  }
+
+  if(bpf_ntohs(header) < 1501) // 'raw' IEEE-802.3 frame
+  {
+    if(data + 11 > data_end) // len(2) + LLC (3) + OUI (3) + Type/Len (2) + extra(1) -- extra since it has to have payload
+      return XDP_DROP;
+
+    data += 2; // skip Lenth
+
+    if(*((__u16 *)data) != 0xAAAA) // SNAP only traffic for TCP/UPD
+      return XDP_PASS;
+
+    data += 2; // skip DSAP and SSAP
+
+    if(*(__u8 *)data != 0x03) // its not U format SNAP so let the kernel handle it
+      return XDP_PASS;
+
+    data += 1; // skip Control Byte
+
+    if(bpf_htonl(*(__u32 *)data) >> 8U != 0) // it has an OUI then cannot be TCP/IP its propetary and == slop
+      return XDP_PASS;
+
+    data += 3; // skip OUI
+
+    header = *(__u16 *)data;
+  }
+
+  if(header == bpf_htons(ETH_P_MPLS_UC)) // this one is horrible, we have to loop :(
+  {
+    if(data + 2 > data_end)
+      return XDP_DROP;
+
+    data += 2; // skip header
+
+    unsigned i = 0;
+#pragma unroll
+    for(; i < 8; i++)
+    {
+      if(data + 5 > data_end) // MPLS header (4) + extra (1) -- extra since it has to have payload
+        return XDP_DROP;
+
+      const __u32 mpls_header = bpf_htonl(*(__u32 *)data);
+
+      data += 4; // skip MPLS header (4)
+
+      if(mpls_header & 0x00000100) // 8th bit in CPU order == 24th in network
+        break;                     // found the bottom, now we point to payload
+    }
+
+    if(i == 8) // suspicious/strange amount of headers so we let the kernel do whatever with it
+      return XDP_PASS;
+
+    const __u8 ip_ver = *(__u8 *)data >> 4;
+
+    if(ip_ver == 4 || ip_ver == 6) // we only like IPv4 or IPv6
+    {
+      const __u32 queue = ctx->rx_queue_index;
+      return bpf_redirect_map(&xsks_map, queue, XDP_PASS);
+    }
+
+    return XDP_PASS; // out of our reach
+  }
+
+  // we care about Ethernet II - IPv4 AND IPv6
+  if(header == bpf_htons(ETH_P_IP) || header == bpf_htons(ETH_P_IPV6))
+  {
+    const __u32 queue = ctx->rx_queue_index;
+    return bpf_redirect_map(&xsks_map, queue, XDP_PASS);
+  }
+
+  // we don't care about other messages so pass em to kernel
+  return XDP_PASS;
+}
+
+/*
+SEC("xdp")
+int xdp_redirect_12345_old(struct xdp_md *ctx)
+{
+  void *data = (void *)(long)ctx->data;
+  void *data_end = (void *)(long)ctx->data_end;
+
   struct iphdr *iph = NULL;
 
   if(data + 1 > data_end)
@@ -74,3 +183,4 @@ int xdp_redirect_12345(struct xdp_md *ctx)
 
   return XDP_PASS;
 }
+*/
