@@ -21,3 +21,18 @@ This is the repo for the HTTP/HTTPS server for my dev portafolio written in C++ 
 
 [IEEE_802.2+ (SNAP)](https://en.wikipedia.org/wiki/Subnetwork_Access_Protocol)
 
+[MPLS](https://en.wikipedia.org/wiki/Multiprotocol_Label_Switching)
+
+## References for eBPF Layer 3 code packet filtering 
+
+> Note : We dont support IP fragmenting yet; thats a nightmare for later
+
+[IPv4 - Header, fragmenting and more](https://en.wikipedia.org/wiki/IPv4)
+
+[IPv6 - Packet](https://en.wikipedia.org/wiki/IPv6_packet)
+
+## References for eBPF Layer 4 code packet filtering 
+
+[TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol)
+
+[UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol)
